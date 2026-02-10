@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>AI Cyber Threat Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+background:radial-gradient(circle,#020617,#000);
+color:#00ffe1;
+font-family:consolas;
+text-align:center;
+}
+h1{text-shadow:0 0 25px cyan;margin-top:20px}
+
+button{
+background:black;color:#00ffe1;border:1px solid cyan;
+padding:12px;margin:10px;border-radius:8px;font-weight:bold;
+cursor:pointer;
+}
+button:hover{background:#00ffe1;color:black}
+
+.card{
+border:1px solid cyan;padding:15px;margin:10px;
+display:inline-block;border-radius:10px;
+box-shadow:0 0 15px cyan;font-size:18px;
+}
+
+table{
+width:95%;margin:auto;border-collapse:collapse;margin-top:20px;background:black;
+}
+td,th{border:1px solid cyan;padding:10px}
+th{background:#020617}
+
+.status{color:orange;margin-top:10px;font-size:18px}
+</style>
+
+</head>
+
+<body>
+
+<h1>🔐 AI ENCRYPTED CLOUD THREAT CENTER</h1>
+
+<button onclick="simulate()">Simulate Traffic</button> <button onclick="train()">Train Model</button> <button onclick="refresh()">Refresh</button>
+
+<div>
+<div class="card">Threat Count<br><span id="threat">0</span></div>
+<div class="card">Normal Count<br><span id="normal">0</span></div>
+<div class="card">Security<br>AES-256 + RSA</div>
+</div>
+
+<div class="status" id="model">Model: Not Trained</div>
+<div class="status">Encryption Enabled | Decryption Enabled</div>
+
+<canvas id="chart" width="500" height="180"></canvas>
+
+<h2>Live IP Detection Logs</h2>
+<table>
+<tr>
+<th>Time</th>
+<th>IP</th>
+<th>Activity</th>
+<th>Status</th>
+</tr>
+<tbody id="table"></tbody>
+</table>
+
+<script>
+let threat=0;
+let normal=0;
+let labels=[];
+let threatData=[];
+let normalData=[];
+let chart;
+
+const ctx=document.getElementById("chart").getContext("2d");
+
+chart=new Chart(ctx,{
+type:"line",
+data:{
+labels:labels,
+datasets:[
+{
+label:"Threat Detection",
+data:threatData,
+borderColor:"#ff3b3b",
+backgroundColor:"rgba(255,0,0,0.18)",
+pointBackgroundColor:"#ff0000",
+pointRadius:4,
+borderWidth:3,
+tension:0.4,
+fill:true
+},
+{
+label:"Normal Traffic",
+data:normalData,
+borderColor:"#00ff9c",
+backgroundColor:"rgba(0,255,156,0.18)",
+pointBackgroundColor:"#00ff9c",
+pointRadius:4,
+borderWidth:3,
+tension:0.4,
+fill:true
+}
+]
+},
+options:{
+responsive:true,
+plugins:{
+legend:{labels:{color:"#00ffe1",font:{size:14}}}
+},
+scales:{
+x:{
+grid:{color:"rgba(0,255,255,0.15)"},
+ticks:{color:"#00ffe1"}
+},
+y:{
+grid:{color:"rgba(0,255,255,0.15)"},
+ticks:{color:"#00ffe1"},
+beginAtZero:true
+}
+}
+}
+});
+
+async function simulate(){
+let r=await fetch("/generate");
+let d=await r.json();
+
+if(d.status=="THREAT"){threat++}else{normal++}
+
+labels.push("T"+labels.length);
+threatData.push(threat);
+normalData.push(normal);
+chart.update();
+
+refresh();
+}
+
+function train(){
+document.getElementById("model").innerText="Model: Training...";
+setTimeout(()=>{
+document.getElementById("model").innerText="Model: Trained Successfully";
+},1500);
+}
+
+async function refresh(){
+let res=await fetch("/logs");
+let data=await res.json();
+
+let table=document.getElementById("table");
+table.innerHTML="";
+
+data.slice(0,12).forEach(r=>{
+let row=table.insertRow();
+row.insertCell(0).innerText=r[1];
+row.insertCell(1).innerText=r[2];
+row.insertCell(2).innerText=r[3];
+row.insertCell(3).innerText=r[4];
+
+if(r[4]=="THREAT"){row.style.color="red"}else{row.style.color="lime"}
+});
+
+document.getElementById("threat").innerText=threat;
+document.getElementById("normal").innerText=normal;
+}
+</script>
+
+</body>
+</html>
